@@ -28,18 +28,11 @@ export default function RootComponent() {
       const pokemonsArray = [];
 
       for (const [idx, pok] of data["pokemon_v2_pokemon"].entries()) {
-        const [imageUrl] = data["pokemon_v2_pokemonsprites"]
-          .filter((item) => {
-            return item["pokemon_id"] === pok.id;
-          })
-          .map((item) => JSON.parse(item["sprites"])["front_default"]);
-
         const pokemonItem = {
           key: pok.id,
           name: pok.name,
           height: pok.height,
           speciesId: pok["pokemon_species_id"],
-          // imageUrl: imageUrl,
           imageUrl: `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${pok.id}.png`,
         };
 
