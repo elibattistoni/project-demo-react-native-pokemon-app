@@ -1,13 +1,6 @@
 import { StatusBar } from "expo-status-bar";
 import { useEffect, useState } from "react";
-import {
-  StyleSheet,
-  Text,
-  View,
-  Button,
-  Pressable,
-  FlatList,
-} from "react-native";
+import { StyleSheet, Text, View, FlatList, Image } from "react-native";
 import { gql, useQuery } from "@apollo/client";
 
 const POKEMONS = gql`
@@ -18,6 +11,11 @@ const POKEMONS = gql`
       name
       pokemon_species_id
     }
+    pokemon_v2_pokemonsprites(distinct_on: pokemon_id) {
+      id
+      pokemon_id
+      sprites
+    }
   }
 `;
 
@@ -27,7 +25,28 @@ export default function RootComponent() {
 
   useEffect(() => {
     if (data) {
-      setPokemons(data["pokemon_v2_pokemon"]);
+      const pokemonsArray = [];
+
+      for (const [idx, pok] of data["pokemon_v2_pokemon"].entries()) {
+        const [imageUrl] = data["pokemon_v2_pokemonsprites"]
+          .filter((item) => {
+            return item["pokemon_id"] === pok.id;
+          })
+          .map((item) => JSON.parse(item["sprites"])["front_default"]);
+
+        const pokemonItem = {
+          key: pok.id,
+          name: pok.name,
+          height: pok.height,
+          speciesId: pok["pokemon_species_id"],
+          // imageUrl: imageUrl,
+          imageUrl: `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${pok.id}.png`,
+        };
+
+        pokemonsArray.push(pokemonItem);
+      }
+
+      setPokemons(pokemonsArray);
     }
   }, [data]);
 
@@ -41,10 +60,15 @@ export default function RootComponent() {
           <FlatList
             data={pokemons}
             renderItem={(itemData) => {
-              return <Text>{itemData.item.name}</Text>;
-            }}
-            keyExtractor={(item, index) => {
-              return item.id;
+              return (
+                <View style={styles.pokemonItem}>
+                  <Text style={styles.pokemonName}>{itemData.item.name}</Text>
+                  <Image
+                    source={{ uri: itemData.item.imageUrl }}
+                    style={styles.image}
+                  />
+                </View>
+              );
             }}
           />
         )}
@@ -77,5 +101,15 @@ const styles = StyleSheet.create({
     color: "#E3E3E3FF",
     textAlign: "center",
     fontSize: 20,
+  },
+  pokemonItem: {
+    backgroundColor: "rgba(46, 199, 255, 0.56)",
+  },
+  pokemonName: {
+    color: "#E3E3E3FF",
+  },
+  image: {
+    width: 20,
+    height: 20,
   },
 });
