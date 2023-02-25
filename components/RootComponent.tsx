@@ -11,11 +11,6 @@ const POKEMONS = gql`
       name
       pokemon_species_id
     }
-    pokemon_v2_pokemonsprites(distinct_on: pokemon_id) {
-      id
-      pokemon_id
-      sprites
-    }
   }
 `;
 
