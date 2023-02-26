@@ -99,7 +99,13 @@ export default function PokemonDetails({
   }
 
   return (
-    <Modal visible={isVisible} animationType="slide">
+    <Modal
+      visible={isVisible}
+      animationType="slide"
+      onRequestClose={() => onCloseModal()}
+      statusBarTranslucent={true}
+      transparent={true}
+    >
       <View style={styles.modal}>{modalContent}</View>
     </Modal>
   );
@@ -111,7 +117,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   mainContainer: {
-    paddingTop: 20,
+    paddingTop: 50,
     flex: 1,
     paddingHorizontal: 0,
     marginHorizontal: 0,
@@ -158,7 +164,7 @@ const styles = StyleSheet.create({
     borderTopWidth: 0.5,
   },
   button: {
-    alignSelf: "flex-start",
+    alignSelf: "flex-end",
     backgroundColor: "rgba(79, 195, 232, 0.85)",
     paddingHorizontal: 10,
     paddingVertical: 5,

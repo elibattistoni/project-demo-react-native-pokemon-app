@@ -130,6 +130,7 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingTop: 50,
     paddingHorizontal: 16,
+    backgroundColor: "#333333",
   },
   title: {
     backgroundColor: "#00B0E8",
