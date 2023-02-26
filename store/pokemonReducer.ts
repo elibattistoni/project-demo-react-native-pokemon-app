@@ -8,15 +8,6 @@ export const initialState = {
   pokemonsInPage: [],
 };
 
-// const pokemonPages = [];
-// for (let i = 0; i < pokemonsArray.length; i + state.pokemonsPerPage) {
-//   const pokemonSlice = pokemonsArray.slice(i, i + state.pokemonsPerPage);
-//   pokemonPages.push(pokemonSlice);
-// }
-// console.log("completed");
-// console.log(pokemonPages[0].length);
-// console.log(pokemonPages[0]);
-
 export function actionReducer(state, action) {
   if (action.type === "STRUCTURE_POKEMON_DATA") {
     //! structure pokemon data
