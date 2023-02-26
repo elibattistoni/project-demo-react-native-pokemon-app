@@ -1,15 +1,29 @@
 export const initialState = {
-  pokemons: [],
   modalIsVisible: false,
-  activePokemonId: null,
-  activePokemonDetails: null,
+  activePokemonId: undefined,
+  activePokemonDetails: undefined,
+  currentPage: 0,
+  pokemonsPerPage: 16,
+  pokemons: [],
+  pokemonsInPage: [],
 };
+
+// const pokemonPages = [];
+// for (let i = 0; i < pokemonsArray.length; i + state.pokemonsPerPage) {
+//   const pokemonSlice = pokemonsArray.slice(i, i + state.pokemonsPerPage);
+//   pokemonPages.push(pokemonSlice);
+// }
+// console.log("completed");
+// console.log(pokemonPages[0].length);
+// console.log(pokemonPages[0]);
 
 export function actionReducer(state, action) {
   if (action.type === "STRUCTURE_POKEMON_DATA") {
+    //! structure pokemon data
     const data = action.value;
 
     const pokemonsArray = [];
+    let pokemonCounter = 0;
 
     for (const [idx, pokemon] of data["pokemon_v2_pokemon"].entries()) {
       const pokemonImg = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${pokemon.id}.png`;
@@ -32,12 +46,53 @@ export function actionReducer(state, action) {
         stats: pokemonStats,
         species: pokemonSpecies,
         generation: pokemonGen,
+        pokemonNumber: pokemonCounter++,
       };
 
       pokemonsArray.push(pokemonItem);
     }
+    const firstPokemon = 0;
+    const lastPokemon = firstPokemon + state.pokemonsPerPage;
 
-    return { ...state, ...{ pokemons: pokemonsArray } };
+    return {
+      ...state,
+      ...{
+        pokemons: pokemonsArray,
+        pokemonsInPage: pokemonsArray.slice(firstPokemon, lastPokemon),
+      },
+    };
+  }
+
+  if (action.type === "PREVIOUS_PAGE") {
+    //! take the first pokemon of the current page and subtract 1 (it will be the last pokemon in the previous page)
+    const lastPokemon = state.pokemonsInPage.at(0).pokemonNumber;
+    const firstPokemon = lastPokemon - state.pokemonsPerPage;
+
+    return {
+      ...state,
+      ...{
+        pokemonsInPage: state.pokemons.slice(firstPokemon, lastPokemon),
+        currentPage: state.currentPage - 1,
+      },
+    };
+  }
+
+  if (action.type === "NEXT_PAGE") {
+    //! take the last pokemon of the current page and add 1 (it will be the first pokemon in the next page)
+    const firstPokemon = state.pokemonsInPage.at(-1).pokemonNumber + 1;
+    const lastPokemon = firstPokemon + state.pokemonsPerPage;
+
+    if (firstPokemon === state.pokemons.length) {
+      return state;
+    }
+
+    return {
+      ...state,
+      ...{
+        pokemonsInPage: state.pokemons.slice(firstPokemon, lastPokemon),
+        currentPage: state.currentPage + 1,
+      },
+    };
   }
 
   if (action.type === "OPEN_MODAL_DETAILS") {
@@ -60,8 +115,8 @@ export function actionReducer(state, action) {
       ...state,
       ...{
         modalIsVisible: false,
-        activePokemonId: null,
-        activePokemonDetails: null,
+        activePokemonId: undefined,
+        activePokemonDetails: undefined,
       },
     };
   }

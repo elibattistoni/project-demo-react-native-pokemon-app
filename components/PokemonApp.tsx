@@ -1,6 +1,6 @@
 import { StatusBar } from "expo-status-bar";
 import { useEffect, useReducer } from "react";
-import { StyleSheet, Text, View, FlatList } from "react-native";
+import { StyleSheet, Text, View, FlatList, Pressable } from "react-native";
 import { gql, useQuery } from "@apollo/client";
 import { initialState, actionReducer } from "../store/pokemonReducer";
 import PokemonItem from "./PokemonItem";
@@ -34,10 +34,14 @@ const GET_POKEMONS = gql`
 `;
 
 export default function PokemonApp() {
-  const [
-    { pokemons, activePokemonId, modalIsVisible, activePokemonDetails },
-    dispatchAction,
-  ] = useReducer(actionReducer, initialState);
+  const [state, dispatchAction] = useReducer(actionReducer, initialState);
+  const {
+    modalIsVisible,
+    activePokemonId,
+    activePokemonDetails,
+    currentPage,
+    pokemonsInPage,
+  } = state;
 
   //! query pokemons from GraphQL
   const { loading, error, data } = useQuery(GET_POKEMONS);
@@ -61,10 +65,10 @@ export default function PokemonApp() {
   if (loading) {
     mainContent = <Spinner />;
   } else {
-    if (pokemons) {
+    if (pokemonsInPage) {
       mainContent = (
         <FlatList
-          data={pokemons}
+          data={pokemonsInPage}
           renderItem={(itemData) => (
             <PokemonItem
               id={itemData.item.id}
@@ -95,6 +99,27 @@ export default function PokemonApp() {
         )}
         <Text style={styles.title}>Pokemon App</Text>
         <View style={styles.pokemonsContainer}>{mainContent}</View>
+        <View style={styles.footer}>
+          <Pressable
+            style={styles.pageBtn}
+            disabled={currentPage === 0 ? true : false}
+            onPress={() => {
+              dispatchAction({ type: "PREVIOUS_PAGE" });
+            }}
+          >
+            <Text style={styles.pageText}>{"<"}</Text>
+          </Pressable>
+          <Text style={styles.currPage}>{currentPage + 1}</Text>
+          <Pressable
+            style={styles.pageBtn}
+            disabled={false}
+            onPress={() => {
+              dispatchAction({ type: "NEXT_PAGE" });
+            }}
+          >
+            <Text style={styles.pageText}>{">"}</Text>
+          </Pressable>
+        </View>
       </View>
     </>
   );
@@ -117,5 +142,27 @@ const styles = StyleSheet.create({
   },
   pokemonsContainer: {
     flex: 10,
+  },
+  footer: {
+    flexDirection: "row",
+    paddingVertical: 10,
+    alignItems: "center",
+  },
+  pageBtn: {
+    flex: 1,
+    backgroundColor: "#00B0E8",
+    paddingVertical: 12,
+    borderRadius: 100,
+  },
+  currPage: {
+    flex: 5,
+    color: "white",
+    textAlign: "center",
+    fontSize: 15,
+  },
+  pageText: {
+    color: "black",
+    textAlign: "center",
+    fontSize: 20,
   },
 });
