@@ -1,4 +1,6 @@
-export const initialState = {
+import { PokemonState, PokemonAction, Pokemon } from "../models/pokemon";
+
+export const initialState: PokemonState = {
   modalIsVisible: false,
   activePokemonId: undefined,
   activePokemonDetails: undefined,
@@ -8,27 +10,31 @@ export const initialState = {
   pokemonsInPage: [],
 };
 
-export function actionReducer(state, action) {
+export function actionReducer(
+  state: PokemonState,
+  action: PokemonAction
+): PokemonState {
   if (action.type === "STRUCTURE_POKEMON_DATA") {
-    //! structure pokemon data
     const data = action.value;
 
-    const pokemonsArray = [];
-    let pokemonCounter = 0;
+    const pokemonsArray: Pokemon[] = [];
+    let pokemonCounter: number = 0;
 
     for (const [idx, pokemon] of data["pokemon_v2_pokemon"].entries()) {
+      // console.log(idx);
+
       const pokemonImg = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${pokemon.id}.png`;
       const pokemonType = pokemon["pokemon_v2_pokemontypes"].map(
-        (item) => item["pokemon_v2_type"].name
+        (item: any) => item["pokemon_v2_type"].name
       );
       const pokemonStats = pokemon["pokemon_v2_pokemonstats"].map(
-        (item) => item["pokemon_v2_stat"].name
+        (item: any) => item["pokemon_v2_stat"].name
       );
       const pokemonSpecies = pokemon["pokemon_v2_pokemonspecy"].name;
       const pokemonGen =
         pokemon["pokemon_v2_pokemonspecy"]["pokemon_v2_generation"].name;
 
-      const pokemonItem = {
+      const pokemonItem: Pokemon = {
         id: pokemon.id,
         name: pokemon.name,
         height: pokemon.height,
@@ -42,8 +48,8 @@ export function actionReducer(state, action) {
 
       pokemonsArray.push(pokemonItem);
     }
-    const firstPokemon = 0;
-    const lastPokemon = firstPokemon + state.pokemonsPerPage;
+    const firstPokemon: number = 0;
+    const lastPokemon: number = firstPokemon + state.pokemonsPerPage;
 
     return {
       ...state,
@@ -56,38 +62,52 @@ export function actionReducer(state, action) {
 
   if (action.type === "PREVIOUS_PAGE") {
     //! take the first pokemon of the current page and subtract 1 (it will be the last pokemon in the previous page)
-    const lastPokemon = state.pokemonsInPage.at(0).pokemonNumber;
-    const firstPokemon = lastPokemon - state.pokemonsPerPage;
-
-    return {
-      ...state,
-      ...{
-        pokemonsInPage: state.pokemons.slice(firstPokemon, lastPokemon),
-        currentPage: state.currentPage - 1,
-      },
-    };
-  }
-
-  if (action.type === "NEXT_PAGE") {
-    //! take the last pokemon of the current page and add 1 (it will be the first pokemon in the next page)
-    const firstPokemon = state.pokemonsInPage.at(-1).pokemonNumber + 1;
-    const lastPokemon = firstPokemon + state.pokemonsPerPage;
-
-    if (firstPokemon === state.pokemons.length) {
-      return state;
+    let firstPokemon = 0;
+    let lastPokemon = state.pokemonsPerPage;
+    let newCurrentPage = 0;
+    if (state.pokemonsInPage.length > 0) {
+      lastPokemon = state.pokemonsInPage.at(0)!.pokemonNumber;
+      firstPokemon = lastPokemon - state.pokemonsPerPage;
+      newCurrentPage = state.currentPage - 1;
     }
 
     return {
       ...state,
       ...{
         pokemonsInPage: state.pokemons.slice(firstPokemon, lastPokemon),
-        currentPage: state.currentPage + 1,
+        currentPage: newCurrentPage,
+      },
+    };
+  }
+
+  if (action.type === "NEXT_PAGE") {
+    //! take the last pokemon of the current page and add 1 (it will be the first pokemon in the next page)
+    let firstPokemon = 0;
+    let lastPokemon = state.pokemonsPerPage;
+    let newCurrentPage = 0;
+
+    //! deal with last page case
+    if (state.pokemonsInPage.length > 0) {
+      firstPokemon = state.pokemonsInPage.at(-1)!.pokemonNumber + 1;
+      if (firstPokemon !== state.pokemons.length) {
+        lastPokemon = firstPokemon + state.pokemonsPerPage;
+        newCurrentPage = state.currentPage + 1;
+      } else {
+        firstPokemon = 0;
+      }
+    }
+
+    return {
+      ...state,
+      ...{
+        pokemonsInPage: state.pokemons.slice(firstPokemon, lastPokemon),
+        currentPage: newCurrentPage,
       },
     };
   }
 
   if (action.type === "OPEN_MODAL_DETAILS") {
-    const [pokemonDetails] = state.pokemons.filter(
+    const [pokemonDetails]: Pokemon[] = state.pokemons.filter(
       (pok) => pok.id === action.value
     );
 
@@ -111,4 +131,6 @@ export function actionReducer(state, action) {
       },
     };
   }
+
+  return state;
 }

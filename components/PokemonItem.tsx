@@ -1,15 +1,26 @@
+import { useCallback } from "react";
 import { Pressable, View, Text, Image, StyleSheet } from "react-native";
+import { PokemonItemProps } from "../models/pokemon";
 
-export default function PokemonItem({ id, name, imageUrl, onShow }) {
+const PokemonItem: React.FC<PokemonItemProps> = ({
+  id,
+  name,
+  imageUrl,
+  onShow,
+}): JSX.Element => {
+  const clickHandler = useCallback(() => {
+    onShow(id);
+  }, [id]);
+
   return (
-    <Pressable onPress={() => onShow(id)}>
+    <Pressable onPress={clickHandler}>
       <View style={styles.pokemonItem}>
         <Image source={{ uri: imageUrl }} style={styles.image} />
-        <Text style={styles.pokemonName}>{name.toUpperCase()}</Text>
+        <Text style={styles.pokemonName}>{name}</Text>
       </View>
     </Pressable>
   );
-}
+};
 
 const styles = StyleSheet.create({
   pokemonItem: {
@@ -33,3 +44,5 @@ const styles = StyleSheet.create({
     marginRight: 10,
   },
 });
+
+export default PokemonItem;

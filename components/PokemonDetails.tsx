@@ -10,6 +10,7 @@ import {
 import { gql, useQuery } from "@apollo/client";
 import Spinner from "./Spinner";
 import { useEffect, useState } from "react";
+import { InfoElementProps, PokemonDetailsProps } from "../models/pokemon";
 
 const GET_POKEMON_MOVES = gql`
   query MyQuery($pokemonId: Int!) {
@@ -26,13 +27,25 @@ const GET_POKEMON_MOVES = gql`
   }
 `;
 
-export default function PokemonDetails({
+const InfoElement: React.FC<InfoElementProps> = ({
+  title,
+  description,
+}): JSX.Element => {
+  return (
+    <View style={styles.textItem}>
+      <Text style={styles.textItemTitle}>{title}</Text>
+      <Text style={styles.textItemInfo}>{description}</Text>
+    </View>
+  );
+};
+
+const PokemonDetails: React.FC<PokemonDetailsProps> = ({
   id,
   isVisible,
   details,
   onCloseModal,
-}) {
-  const [moves, setMoves] = useState([]);
+}): JSX.Element => {
+  const [moves, setMoves] = useState<string[]>([]);
 
   const { loading, error, data } = useQuery(GET_POKEMON_MOVES, {
     variables: { pokemonId: id },
@@ -40,14 +53,18 @@ export default function PokemonDetails({
 
   useEffect(() => {
     if (data) {
-      const activeMoves = data["pokemon_v2_pokemonmove"].map(
-        (item) => item["pokemon_v2_move"].name
+      const activeMoves: string[] = data["pokemon_v2_pokemonmove"].map(
+        (item: any) => item["pokemon_v2_move"].name
       );
       setMoves(activeMoves);
     }
   }, [data]);
 
-  let modalContent = null;
+  function closeModalHandler() {
+    onCloseModal();
+  }
+
+  let modalContent: JSX.Element = <></>;
   if (loading) {
     modalContent = <Spinner />;
   } else {
@@ -58,38 +75,25 @@ export default function PokemonDetails({
           <Image source={{ uri: details.imageUrl }} style={styles.image} />
           <ScrollView alwaysBounceVertical={false}>
             <View style={styles.details}>
-              <View style={styles.textItem}>
-                <Text style={styles.textItemTitle}>TYPE:</Text>
-                <Text style={styles.textItemInfo}>
-                  {details.type.join(", ")}
-                </Text>
-              </View>
-              <View style={styles.textItem}>
-                <Text style={styles.textItemTitle}>SPECIES:</Text>
-                <Text style={styles.textItemInfo}>{details.species}</Text>
-              </View>
-              <View style={styles.textItem}>
-                <Text style={styles.textItemTitle}>HEIGHT:</Text>
-                <Text style={styles.textItemInfo}>{details.height}</Text>
-              </View>
-              <View style={styles.textItem}>
-                <Text style={styles.textItemTitle}>STATS:</Text>
-                <Text style={styles.textItemInfo}>
-                  {details.stats.join(", ")}
-                </Text>
-              </View>
-              <View style={styles.textItem}>
-                <Text style={styles.textItemTitle}>GENERATION:</Text>
-                <Text style={styles.textItemInfo}>{details.generation}</Text>
-              </View>
-              <View style={styles.textItem}>
-                <Text style={styles.textItemTitle}>MOVES</Text>
-                <Text style={styles.textItemInfo}>{moves.join(", ")}</Text>
-              </View>
+              <InfoElement
+                title="TYPE:"
+                description={details.type.join(", ")}
+              />
+              <InfoElement title="SPECIES:" description={details.species} />
+              <InfoElement title="HEIGHT:" description={details.height} />
+              <InfoElement
+                title="STATS:"
+                description={details.stats.join(", ")}
+              />
+              <InfoElement
+                title="GENERATION:"
+                description={details.generation}
+              />
+              <InfoElement title="MOVES:" description={moves.join(", ")} />
             </View>
           </ScrollView>
           <View style={styles.buttonContainer}>
-            <Pressable onPress={() => onCloseModal()} style={styles.button}>
+            <Pressable onPress={closeModalHandler} style={styles.button}>
               <Text style={styles.buttonText}>Close</Text>
             </Pressable>
           </View>
@@ -102,14 +106,14 @@ export default function PokemonDetails({
     <Modal
       visible={isVisible}
       animationType="slide"
-      onRequestClose={() => onCloseModal()}
+      onRequestClose={closeModalHandler}
       statusBarTranslucent={true}
       transparent={true}
     >
       <View style={styles.modal}>{modalContent}</View>
     </Modal>
   );
-}
+};
 
 const styles = StyleSheet.create({
   modal: {
@@ -133,13 +137,11 @@ const styles = StyleSheet.create({
     alignSelf: "center",
     width: 150,
     height: 150,
-    // backgroundColor: "pink",
   },
   details: {
     flex: 1,
     borderTopColor: "white",
     borderTopWidth: 0.5,
-    // backgroundColor: "pink",
     marginHorizontal: 20,
     paddingTop: 20,
     paddingHorizontal: 0,
@@ -177,3 +179,5 @@ const styles = StyleSheet.create({
     color: "#333333",
   },
 });
+
+export default PokemonDetails;

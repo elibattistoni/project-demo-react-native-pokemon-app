@@ -6,6 +6,7 @@ import { initialState, actionReducer } from "../store/pokemonReducer";
 import PokemonItem from "./PokemonItem";
 import PokemonDetails from "./PokemonDetails";
 import Spinner from "./Spinner";
+import { FooterProps } from "../models/pokemon";
 
 const GET_POKEMONS = gql`
   query MyQuery {
@@ -33,7 +34,36 @@ const GET_POKEMONS = gql`
   }
 `;
 
-export default function PokemonApp() {
+const Footer: React.FC<FooterProps> = ({
+  currentPage,
+  dispatchAction,
+}): JSX.Element => {
+  return (
+    <View style={styles.footer}>
+      <Pressable
+        style={styles.pageBtn}
+        disabled={currentPage === 0 ? true : false}
+        onPress={() => {
+          dispatchAction({ type: "PREVIOUS_PAGE" });
+        }}
+      >
+        <Text style={styles.pageText}>{"<"}</Text>
+      </Pressable>
+      <Text style={styles.currPage}>{currentPage + 1}</Text>
+      <Pressable
+        style={styles.pageBtn}
+        disabled={false}
+        onPress={() => {
+          dispatchAction({ type: "NEXT_PAGE" });
+        }}
+      >
+        <Text style={styles.pageText}>{">"}</Text>
+      </Pressable>
+    </View>
+  );
+};
+
+const PokemonApp: React.FC = (): JSX.Element => {
   const [state, dispatchAction] = useReducer(actionReducer, initialState);
   const {
     modalIsVisible,
@@ -52,7 +82,7 @@ export default function PokemonApp() {
   }, [data]);
 
   //! show modal
-  function showModalHandler(pokemonId) {
+  function showModalHandler(pokemonId: number) {
     dispatchAction({ type: "OPEN_MODAL_DETAILS", value: pokemonId });
   }
   //! close modal
@@ -61,7 +91,7 @@ export default function PokemonApp() {
   }
 
   //! define the content of the list of pokemons
-  let mainContent = null;
+  let mainContent: JSX.Element = <></>;
   if (loading) {
     mainContent = <Spinner />;
   } else {
@@ -73,12 +103,12 @@ export default function PokemonApp() {
             <PokemonItem
               id={itemData.item.id}
               imageUrl={itemData.item.imageUrl}
-              name={itemData.item.name}
+              name={itemData.item.name.toUpperCase()}
               onShow={showModalHandler}
             />
           )}
           keyExtractor={(item, _) => {
-            return item.id;
+            return item.id.toString();
           }}
         />
       );
@@ -91,39 +121,19 @@ export default function PokemonApp() {
       <View style={styles.container}>
         {modalIsVisible && (
           <PokemonDetails
-            id={activePokemonId}
+            id={activePokemonId!}
             isVisible={modalIsVisible}
-            details={activePokemonDetails}
+            details={activePokemonDetails!}
             onCloseModal={closeModalHandler}
           />
         )}
         <Text style={styles.title}>Pokemon App</Text>
         <View style={styles.pokemonsContainer}>{mainContent}</View>
-        <View style={styles.footer}>
-          <Pressable
-            style={styles.pageBtn}
-            disabled={currentPage === 0 ? true : false}
-            onPress={() => {
-              dispatchAction({ type: "PREVIOUS_PAGE" });
-            }}
-          >
-            <Text style={styles.pageText}>{"<"}</Text>
-          </Pressable>
-          <Text style={styles.currPage}>{currentPage + 1}</Text>
-          <Pressable
-            style={styles.pageBtn}
-            disabled={false}
-            onPress={() => {
-              dispatchAction({ type: "NEXT_PAGE" });
-            }}
-          >
-            <Text style={styles.pageText}>{">"}</Text>
-          </Pressable>
-        </View>
+        <Footer currentPage={currentPage} dispatchAction={dispatchAction} />
       </View>
     </>
   );
-}
+};
 
 const styles = StyleSheet.create({
   container: {
@@ -167,3 +177,5 @@ const styles = StyleSheet.create({
     fontSize: 20,
   },
 });
+
+export default PokemonApp;

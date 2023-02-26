@@ -1,12 +1,12 @@
 import { ActivityIndicator, StyleSheet, View } from "react-native";
 
-export default function Spinner() {
+const Spinner: React.FC = (): JSX.Element => {
   return (
     <View style={styles.spinnerContainer}>
       <ActivityIndicator size="large" color="#00B0E8" />
     </View>
   );
-}
+};
 
 const styles = StyleSheet.create({
   spinnerContainer: {
@@ -16,3 +16,5 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
 });
+
+export default Spinner;
