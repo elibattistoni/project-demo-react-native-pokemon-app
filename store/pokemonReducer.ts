@@ -21,8 +21,6 @@ export function actionReducer(
     let pokemonCounter: number = 0;
 
     for (const [idx, pokemon] of data["pokemon_v2_pokemon"].entries()) {
-      // console.log(idx);
-
       const pokemonImg = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${pokemon.id}.png`;
       const pokemonType = pokemon["pokemon_v2_pokemontypes"].map(
         (item: any) => item["pokemon_v2_type"].name
